@@ -13,7 +13,6 @@ import streamlit as st
 import numpy as np
 import cv2
 from PIL import Image
-from skimage.metrics import structural_similarity as ssim
 import io
 
 # ---------- Page setup ----------
@@ -83,6 +82,36 @@ def resize_to_match(img1, img2):
     return cv2.resize(img2, (w, h))
 
 
+def compute_ssim(gray1, gray2):
+    """
+    A self-contained implementation of the Structural Similarity Index (SSIM),
+    using only OpenCV/numpy (no scikit-image dependency needed).
+    Returns: (mean_score, full_ssim_map) where full_ssim_map is float32 in [-1, 1].
+    """
+    C1 = (0.01 * 255) ** 2
+    C2 = (0.03 * 255) ** 2
+
+    img1 = gray1.astype(np.float64)
+    img2 = gray2.astype(np.float64)
+
+    kernel = cv2.getGaussianKernel(11, 1.5)
+    window = np.outer(kernel, kernel.transpose())
+
+    mu1 = cv2.filter2D(img1, -1, window)[5:-5, 5:-5]
+    mu2 = cv2.filter2D(img2, -1, window)[5:-5, 5:-5]
+    mu1_sq, mu2_sq, mu1_mu2 = mu1 ** 2, mu2 ** 2, mu1 * mu2
+
+    sigma1_sq = cv2.filter2D(img1 ** 2, -1, window)[5:-5, 5:-5] - mu1_sq
+    sigma2_sq = cv2.filter2D(img2 ** 2, -1, window)[5:-5, 5:-5] - mu2_sq
+    sigma12 = cv2.filter2D(img1 * img2, -1, window)[5:-5, 5:-5] - mu1_mu2
+
+    ssim_map = (
+        ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2))
+        / ((mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
+    )
+    return float(ssim_map.mean()), ssim_map
+
+
 def compare_images(img1, img2):
     """
     Returns:
@@ -93,12 +122,15 @@ def compare_images(img1, img2):
     gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
-    score, diff = ssim(gray1, gray2, full=True)
-    diff = (diff * 255).astype("uint8")
+    score, ssim_map = compute_ssim(gray1, gray2)
+    # Normalize the SSIM map to a 0-255 grayscale difference image
+    diff = ((1 - ssim_map) * 255).clip(0, 255).astype("uint8")
+    diff = cv2.resize(diff, (gray1.shape[1], gray1.shape[0]))
 
     # Threshold the diff map to find regions that changed significantly
+    # (diff is high where images differ, so plain BINARY + OTSU picks those out)
     thresh = cv2.threshold(
-        diff, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU
+        diff, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU
     )[1]
 
     contours, _ = cv2.findContours(
@@ -192,7 +224,7 @@ else:
 
 st.markdown("---")
 st.caption(
-    "Built with Streamlit, OpenCV, and scikit-image (SSIM algorithm). "
-    "This technique is used in real-world digital forensics to detect "
-    "image tampering and manipulation."
+    "Built with Streamlit and OpenCV, using a self-contained SSIM (Structural "
+    "Similarity Index) implementation. This technique is used in real-world "
+    "digital forensics to detect image tampering and manipulation."
 )

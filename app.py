@@ -56,6 +56,47 @@ st.markdown(
         padding: 16px;
         text-align: center;
     }
+    .feature-card {
+        background: white;
+        border: 1px solid #EED6F0;
+        border-radius: 14px;
+        padding: 22px 20px;
+        height: 100%;
+        box-shadow: 0 2px 10px rgba(166, 58, 203, 0.06);
+    }
+    .feature-card h4 {
+        font-family: 'Poppins', sans-serif;
+        color: #6B2FA0;
+        margin-bottom: 6px;
+    }
+    .feature-card p {
+        color: #555;
+        font-size: 0.92rem;
+        margin: 0;
+    }
+    .step-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #A63ACB, #E85DA0);
+        color: white;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    .usecase-pill {
+        display: inline-block;
+        background: #F7E6F7;
+        color: #6B2FA0;
+        border-radius: 999px;
+        padding: 6px 14px;
+        margin: 4px 6px 4px 0;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -220,7 +261,79 @@ if file1 and file2:
             mime="image/png",
         )
 else:
-    st.info("Upload two images above to get started.")
+    st.markdown("")
+    f1, f2, f3 = st.columns(3)
+    with f1:
+        st.markdown(
+            """<div class='feature-card'>
+                <h4>🎯 Similarity score</h4>
+                <p>Get a precise percentage measuring how structurally similar
+                your two images are, powered by the SSIM algorithm.</p>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+    with f2:
+        st.markdown(
+            """<div class='feature-card'>
+                <h4>📦 Region detection</h4>
+                <p>Automatically finds and draws bounding boxes around every
+                area that changed between your two images.</p>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+    with f3:
+        st.markdown(
+            """<div class='feature-card'>
+                <h4>⬇️ Downloadable results</h4>
+                <p>Export the annotated comparison as a PNG to include in a
+                report, case file, or presentation.</p>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### How it works")
+    h1, h2, h3 = st.columns(3)
+    with h1:
+        st.markdown(
+            """<span class='step-badge'>1</span>
+
+**Upload two images**
+
+An original photo and a comparison version (edited, AI-generated, or a later copy).""",
+        )
+    with h2:
+        st.markdown(
+            """<span class='step-badge'>2</span>
+
+**Run the comparison**
+
+The app aligns both images and computes a structural similarity map between them.""",
+        )
+    with h3:
+        st.markdown(
+            """<span class='step-badge'>3</span>
+
+**Review the findings**
+
+See the similarity score, a visual diff map, and every changed region boxed and labeled.""",
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("### Where this is used")
+    st.markdown(
+        """
+        <span class='usecase-pill'>🕵️ Digital forensics</span>
+        <span class='usecase-pill'>🖼️ Deepfake / AI-edit detection</span>
+        <span class='usecase-pill'>📄 Document tamper checks</span>
+        <span class='usecase-pill'>🔐 Fraud & authenticity verification</span>
+        <span class='usecase-pill'>📸 Before/after QA</span>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.info("⬆️ Upload two images above and click **Compare images** to see it in action.")
 
 st.markdown("---")
 st.caption(
